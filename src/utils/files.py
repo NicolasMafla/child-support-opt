@@ -11,3 +11,9 @@ def save_pandas_data(input_data: pd.DataFrame, filepath: str) -> None:
 
 def file_exists(path: str) -> bool:
     return os.path.isfile(path)
+
+
+def get_filename(filepath: str) -> str:
+    filename_ext = os.path.basename(filepath)
+    filename = os.path.splitext(filename_ext)[0]
+    return filename
