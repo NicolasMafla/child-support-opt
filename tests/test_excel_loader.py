@@ -1,4 +1,4 @@
-from src import ExcelLoader
+from src.data import ExcelLoader
 
 def test_excel_loader():
     excel_loader = ExcelLoader()
