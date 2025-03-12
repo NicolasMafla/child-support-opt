@@ -1,2 +1,2 @@
 from .loaders import ExcelLoader, CSVLoader, DataLoader
-from .processors import FCPDataProcessor
+from .processors import FCPDataProcessor, POADataProcessor
