@@ -20,10 +20,7 @@ class FCPDataProcessor:
             "fcpLon"
         ]
 
-    def load_data(self, filepath: str) -> pd.DataFrame:
-        return self.loader.load_data(filepath=filepath)
-
-    def process_data(self, input_data: pd.DataFrame) -> pd.DataFrame:
-        data = input_data.copy()
+    def process_data(self, filepath: str) -> pd.DataFrame:
+        data = self.loader.load_data(filepath=filepath)
         data.columns = self.columns
         return data
