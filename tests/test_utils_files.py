@@ -1,5 +1,5 @@
 import pandas as pd
-from src.utils import file_exists, save_pandas_data, get_filename
+from src.utils import file_exists, save_pandas_data, get_filename, list_files
 
 def test_file_exists():
     assert file_exists(path="./data/test/fcps.xlsx")
@@ -19,3 +19,9 @@ def test_get_filename():
     filepath = "./data/test/EC0107.csv"
     filename = get_filename(filepath=filepath)
     assert filename == "EC0107"
+
+
+def test_list_files():
+    path = "./data/test/"
+    files = list_files(path=path)
+    assert len(files) == 3
