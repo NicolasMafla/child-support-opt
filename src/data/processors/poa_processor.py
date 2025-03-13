@@ -22,7 +22,10 @@ class POADataProcessor:
         data["account"] = data["account"].astype(int).astype(str)
         data["total"] = data["total"].apply(money_to_float)
         for col in [f"m{i}" for i in range(1, 13)]:
-            data[col] = data[col].astype(float)
+            if data[col].dtype.name == "object":
+                data[col] = data[col].apply(money_to_float)
+            else:
+                data[col] = data[col].astype(float)
         return data
 
     @staticmethod
