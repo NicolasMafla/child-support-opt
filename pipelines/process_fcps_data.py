@@ -2,8 +2,8 @@ from src.data import ExcelLoader, FCPDataProcessor
 from src.utils import save_pandas_data
 
 loader = ExcelLoader()
-raw_data_path = "./data/raw/fcps.xlsx"
-processed_data_path = "./data/processed/processed_fcps.xlsx"
+raw_data_path = "./data/test/fcps.xlsx"
+processed_data_path = "./data/processed/processed_fcps.csv"
 
 processor = FCPDataProcessor(loader=loader)
 processed_data = processor.process_data(filepath=raw_data_path)
