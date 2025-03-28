@@ -10,7 +10,7 @@ processor = POADataProcessor(loader=loader)
 ext = ".xlsx"
 
 for filepath in filepaths:
-    processed_data = processor.process_data(filepath=filepath)
+    processed_data = processor.process(filepath=filepath)
     filename = get_filename(filepath=filepath)
     output_filepath = os.path.join(processed_path, f"{filename}{ext}")
     save_pandas_data(input_data=processed_data, filepath=output_filepath)
