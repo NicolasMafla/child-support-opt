@@ -1,9 +1,35 @@
 import pandas as pd
 from typing import List
-from ..loaders import DataLoader
+from ..files import DataLoader
+from .models.processor import DataProcessor
 from ...utils import get_filename, money_to_float
 
-class POADataProcessor:
+
+class FCPDataProcessor(DataProcessor):
+    def __init__(self, loader: DataLoader):
+        self.loader: DataLoader = loader
+        self.columns: List[str] = [
+            "fcpId",
+            "fpcStatus",
+            "fcpType",
+            "fpcCurrentParticipants",
+            "fcpSponsoredParticipants",
+            "fcpUnsponsoredParticipants",
+            "fpcSurvivalParticipants",
+            "fpcAllocatedSurvivalSlots",
+            "fcpCity",
+            "fcpState",
+            "fcpLat",
+            "fcpLon"
+        ]
+
+    def process(self, filepath: str) -> pd.DataFrame:
+        data = self.loader.load(filepath=filepath)
+        data.columns = self.columns
+        return data
+
+
+class POADataProcessor(DataProcessor):
     def __init__(self, loader: DataLoader):
         self.loader: DataLoader = loader
         self.columns: List[str] = ["activity", "group", "account", "total"] + [f"m{i}" for i in range(1, 13)]
@@ -33,9 +59,9 @@ class POADataProcessor:
         data["fcpId"] = poa_id
         return data
 
-    def process_data(self, filepath: str) -> pd.DataFrame:
+    def process(self, filepath: str) -> pd.DataFrame:
         poa_id = get_filename(filepath=filepath)
-        data = self.loader.load_data(filepath=filepath)
+        data = self.loader.load(filepath=filepath)
         data = self.set_columns(data=data)
         data = self.remove_nans_by_col(data=data, col="account")
         data = self.parse_col_types(data=data)
