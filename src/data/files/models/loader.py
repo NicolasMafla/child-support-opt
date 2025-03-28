@@ -3,5 +3,5 @@ from abc import ABC, abstractmethod
 
 class DataLoader(ABC):
     @abstractmethod
-    def load_data(self, filepath: str) -> pd.DataFrame:
+    def load(self, filepath: str) -> pd.DataFrame:
         pass
