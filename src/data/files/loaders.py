@@ -1,13 +1,14 @@
 import os
 import pandas as pd
+from typing import Dict
 from src.data.files.models.loader import DataLoader
 
 
 class ExcelLoader(DataLoader):
-    def load(self, filepath: str, sheet_name: str = 0) -> pd.DataFrame:
+    def load(self, filepath: str, sheet_name: int = 0, skiprows=None) -> pd.DataFrame | Dict[str, pd.DataFrame]:
         if os.path.exists(filepath):
             try:
-                data = pd.read_excel(filepath, sheet_name=sheet_name)
+                data = pd.read_excel(filepath, sheet_name=sheet_name, skiprows=skiprows)
                 return data
             except Exception as e:
                 print(f"{e}")
