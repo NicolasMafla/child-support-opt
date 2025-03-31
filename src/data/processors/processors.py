@@ -91,19 +91,26 @@ class BalanceDataProcessor(DataProcessor):
             copy_df["month"] = f"m{i}"
             data_list.append(copy_df)
         data = pd.concat(data_list).reset_index(drop=True)
-        data = data[data["Codigo"] != 204]
         return data
 
     @staticmethod
     def parse_col_types(data: pd.DataFrame) -> pd.DataFrame:
         data["account"] = data["account"].astype(int).astype(str)
         for col in ["before", "debe", "haber", "diff"]:
-            data[col] = data[col].astype(float)
+            if data[col].dtype.name == "object":
+                data[col] = data[col].apply(money_to_float)
+            else:
+                data[col] = data[col].astype(float)
         return data
 
     @staticmethod
     def set_fcp_id(data: pd.DataFrame, fcp_id: str) -> pd.DataFrame:
         data["fcpId"] = fcp_id
+        return data
+
+    @staticmethod
+    def filter_values_by_col(data: pd.DataFrame, col: str) -> pd.DataFrame:
+        data = data[data["account"] != "204"]
         return data
 
     def process(self, filepath: str) -> pd.DataFrame:
@@ -115,6 +122,7 @@ class BalanceDataProcessor(DataProcessor):
         data = self.parse_data_sheets(info=info)
         data = self.set_columns(data=data)
         data = self.parse_col_types(data=data)
+        data = self.filter_values_by_col(data=data, col="account")
         data = self.set_fcp_id(data=data, fcp_id=fcp_id)
         logger.success(f"[{fcp_id}] Successfully Balance data processed from {filepath}")
         return data

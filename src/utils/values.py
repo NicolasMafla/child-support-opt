@@ -1,3 +1,4 @@
-def money_to_float(value: str) -> float:
-    value = value.replace(",", "")
+def money_to_float(value: str|float) -> float:
+    if isinstance(value, str):
+        value = value.replace(",","")
     return float(value)
