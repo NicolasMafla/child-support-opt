@@ -24,4 +24,4 @@ def test_get_filename():
 def test_list_files():
     path = "./data/test/"
     files = list_files(path=path)
-    assert len(files) == 3
+    assert len(files) == 4
