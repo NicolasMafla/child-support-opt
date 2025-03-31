@@ -1,6 +1,7 @@
 import re
 import pandas as pd
 from typing import List, Dict
+from config import logger
 from ..files import DataLoader
 from .models.processor import DataProcessor
 from ...utils import get_filename, money_to_float
@@ -25,8 +26,10 @@ class FCPDataProcessor(DataProcessor):
         ]
 
     def process(self, filepath: str) -> pd.DataFrame:
+        logger.info(f"FCP data process initialized from {filepath}")
         data = self.loader.load(filepath=filepath)
         data.columns = self.columns
+        logger.success(f"Successfully FCP data processed from {filepath}")
         return data
 
 
@@ -62,11 +65,13 @@ class POADataProcessor(DataProcessor):
 
     def process(self, filepath: str) -> pd.DataFrame:
         fcp_id = get_filename(filepath=filepath)
+        logger.info(f"[{fcp_id}] POA data process initialized from {filepath}")
         data = self.loader.load(filepath=filepath)
         data = self.set_columns(data=data)
         data = self.remove_nans_by_col(data=data, col="account")
         data = self.parse_col_types(data=data)
         data = self.set_fcp_id(data=data, fcp_id=fcp_id)
+        logger.success(f"[{fcp_id}] Successfully POA data processed from {filepath}")
         return data
 
 
@@ -105,13 +110,13 @@ class BalanceDataProcessor(DataProcessor):
         filename = get_filename(filepath=filepath)
         match = re.search(pattern="([A-Z]{2}\d{4})$", string=filename)
         fcp_id = match.group(1)
-
+        logger.info(f"[{fcp_id}] Balance data process initialized from {filepath}")
         info = self.loader.load(filepath=filepath, sheet_name=None, skiprows=5)
         data = self.parse_data_sheets(info=info)
         data = self.set_columns(data=data)
         data = self.parse_col_types(data=data)
         data = self.set_fcp_id(data=data, fcp_id=fcp_id)
-        print(data)
+        logger.success(f"[{fcp_id}] Successfully Balance data processed from {filepath}")
         return data
 
 
