@@ -63,6 +63,17 @@ class POADataProcessor(DataProcessor):
         data["fcpId"] = fcp_id
         return data
 
+    @staticmethod
+    def unpivot_month_values(data: pd.DataFrame) -> pd.DataFrame:
+        data = pd.melt(
+            data,
+            id_vars=["activity", "group", "account", "fcpId"],
+            value_vars=["m1", "m2", "m3", "m4", "m5", "m6", "m7", "m8", "m9", "m10", "m11", "m12"],
+            var_name="month",
+            value_name="value"
+        )
+        return data
+
     def process(self, filepath: str) -> pd.DataFrame:
         fcp_id = get_filename(filepath=filepath)
         logger.info(f"[{fcp_id}] POA data process initialized from {filepath}")
@@ -71,7 +82,8 @@ class POADataProcessor(DataProcessor):
         data = self.remove_nans_by_col(data=data, col="account")
         data = self.parse_col_types(data=data)
         data = self.set_fcp_id(data=data, fcp_id=fcp_id)
-        logger.success(f"[{fcp_id}] Successfully POA data processed from {filepath}")
+        data = self.unpivot_month_values(data=data)
+        logger.info(f"[{fcp_id}] Successfully POA data processed from {filepath}")
         return data
 
 
@@ -84,7 +96,8 @@ class BalanceDataProcessor(DataProcessor):
         data.columns = self.columns
         return data
 
-    def parse_data_sheets(self, info: Dict[str, pd.DataFrame]) -> pd.DataFrame:
+    @staticmethod
+    def parse_data_sheets(info: Dict[str, pd.DataFrame]) -> pd.DataFrame:
         data_list = []
         for i, (_, df) in enumerate(info.items(), 1):
             copy_df = df.copy()
