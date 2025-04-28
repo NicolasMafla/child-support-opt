@@ -39,52 +39,44 @@ class BudgetLpOptimizer(LpOptimizer):
     def set_objective(self) -> None:
         x1 = self.variables["x1"]
         x2 = self.variables["x2"]
-        obj_func = x1 + x2
+        t1 = self.variables["t1"]
+        t2 = self.variables["t2"]
+        obj_func = (x1 + x2) + (t1 + t2)
         self.model.setObjective(obj_func)
 
     def add_constraints(self) -> None:
-        c1 = self.params["C1"] * self.variables["x1"] + self.params["C2"] * self.variables["x2"] <= self.params["B"] * (1 - 0.05)
-        c2 = self.variables["x1"] + self.variables["x2"] <= self.params["N_max"]
-        c3 = self.variables["x1"] >= 1
-        c4 = self.variables["x2"] >= 1
-        c5 = self.variables["x1"] >= 0.1 * (self.variables["x1"] + self.variables["x2"])
+        x1 = self.variables["x1"]
+        x2 = self.variables["x2"]
+        c1 = self.params["C1"]
+        c2 = self.params["C2"]
+        d1 = self.params["D1"]
+        d2 = self.params["D2"]
+        t1 = self.variables["t1"]
+        t2 = self.variables["t2"]
+        G = self.params["G"]
+        I = self.params["I"]
+        n_max = self.params["N_max"]
+        kratio = self.params["kids_ratio"]
 
-        for const in [c1, c2, c3, c4, c5]:
+        director = self.params["director"]
+        accountant = self.params["accountant"]
+        secretary = self.params["secretary"]
+        kitchen = self.params["kitchen"]
+        crew = director + accountant + secretary + kitchen
+
+        R1 = (c1 * x1 + c2 * x2) + (d1 * t1) + (d2 * t2) + (2 * 3940.08) + G + crew <= I * (x1 + x2)
+        R2 = x1 + x2 <= n_max
+        R3 = x1 >= 1
+        R4 = x2 >= 1
+        R5 = x1 >= (kratio) * (x1 + x2)
+        R9 = x1 <= 20 * t2
+        # R10 = (x1 * 30)  <=  (t2 * 960) + (t1 * 1920)
+        R11 = t1 >= 1
+        # R12 = (t1 * 88) + (t1 * 10) + (1.5 * x2) + (2 * (t1 * 40)) + (t1 * 20) <= 0.6 * (t1 * 1920)
+        R13 = (x1 * 1.5 * 2 * 10) + (t1 * 2 * 10) + (t1 * 2 * 44) + (t1 * 2 * 5) + (x2 * 1.5) + (t1 * 40) <= 0.6 * ((t2 * 960) + (t1 * 1920))
+
+        for const in [R1, R2, R3, R4, R5, R9, R11, R13]:
             self.model.addConstraint(constraint=const)
 
     def solve(self) -> None:
         self.model.solve()
-
-
-pulp.LpSolverDefault.msg = False
-
-params = {
-    "C1" : 5787.51 / 275 + 5,  # Costo por niño tipo 1 (0 a 5 años)
-    "C2" : 5787.51 / 275,  # Costo por niño tipo 2 (6 a 22 años)
-    "B" : 6000,  # Presupuesto asignado
-    "N_max" : 1000  # Número máximo de niños
-}
-
-model = pulp.LpProblem(name="compassion", sense=pulp.LpMaximize)
-
-variables = {
-    "x1": pulp.LpVariable(name="x1", lowBound=0, cat="Integer"),
-    "x2": pulp.LpVariable(name="x2", lowBound=0, cat="Integer")
-}
-
-b = BudgetLpOptimizer(model=model, variables=variables, params=params)
-b.set_objective()
-b.add_constraints()
-b.solve()
-
-if pulp.LpStatus[b.model.status] == "Optimal":
-    print(f"Estado de la solución: {pulp.LpStatus[model.status]}")
-    print(f"n1: {pulp.value(variables['x1'])}")
-    print(f"n2: {pulp.value(variables['x2'])}")
-    print(f"n1 + n2: {pulp.value(variables['x1']) + pulp.value(variables['x2'])}")
-
-    # Imprimir el valor de la restricción budget_constraint (costo total)
-    total_cost = params["C1"] * pulp.value(variables["x1"]) + params["C2"] * pulp.value(variables["x2"])
-    print(f"Presupuesto asignado: {params['B']} vs. costo optimizado: {total_cost}")
-else:
-    print(f"Estado: {pulp.LpStatus[model.status]}")
