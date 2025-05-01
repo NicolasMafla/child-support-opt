@@ -69,13 +69,13 @@ class BudgetLpOptimizer(LpOptimizer):
         R3 = x1 >= 1
         R4 = x2 >= 1
         R5 = x1 >= (kratio) * (x1 + x2)
-        R9 = x1 <= 20 * t2
-        # R10 = (x1 * 30)  <=  (t2 * 960) + (t1 * 1920)
+        R9 = x1 <= (40 * t1 + 20 * t2)
+        R10 = x2 <= (100 * t1 + 50 * t2)
         R11 = t1 >= 1
-        # R12 = (t1 * 88) + (t1 * 10) + (1.5 * x2) + (2 * (t1 * 40)) + (t1 * 20) <= 0.6 * (t1 * 1920)
-        R13 = (x1 * 1.5 * 2 * 10) + (t1 * 2 * 10) + (t1 * 2 * 44) + (t1 * 2 * 5) + (x2 * 1.5) + (t1 * 40) <= 0.6 * ((t2 * 960) + (t1 * 1920))
+        R12 = t2 >= 1
+        R13 = (x1 * 1.5 * 2 * 10) + ((t1 + t2) * 2 * 10) + ((t1 + t2) * 2 * 44) + ((t1 + t2) * 2 * 5) + (x2 * 1.5) + ((t1 + t2) * 40) <= 0.6 * ((t2 * 960) + (t1 * 1920))
 
-        for const in [R1, R2, R3, R4, R5, R9, R11, R13]:
+        for const in [R1, R2, R3, R4, R5, R9, R10, R11, R12, R13]:
             self.model.addConstraint(constraint=const)
 
     def solve(self) -> None:
