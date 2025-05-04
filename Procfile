@@ -1,1 +1,1 @@
-streamlit run main.py --server.address 0.0.0.0 --server.port $PORT --server.fileWatcherType none --browser.gatherUsageStats false --client.toolbarMode minimal
+web: streamlit run main.py --server.port=$PORT --server.enableCORS=false --server.enableXsrfProtection=false
