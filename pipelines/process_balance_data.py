@@ -4,8 +4,8 @@ from src.data import ExcelLoader, BalanceDataProcessor
 from src.utils import save_pandas_data, list_files, get_filename
 
 loader = ExcelLoader()
-source_path = "./data/raw/Balance de Comprobación FY24"
-processed_path = "./data/processed/balance"
+source_path = "./data/raw/Balance de Comprobación"
+processed_path = "./data/processed/balanceNew"
 filepaths = list_files(path=source_path)
 processor = BalanceDataProcessor(loader=loader)
 ext = ".xlsx"
