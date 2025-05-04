@@ -54,7 +54,9 @@ class BudgetLpOptimizer(LpOptimizer):
         t1 = self.variables["t1"]
         t2 = self.variables["t2"]
         G = self.params["G"]
+        V = self.params["V"]
         I = self.params["I"]
+        E = self.params["E"]
         n_max = self.params["N_max"]
         kratio = self.params["kids_ratio"]
 
@@ -62,20 +64,23 @@ class BudgetLpOptimizer(LpOptimizer):
         accountant = self.params["accountant"]
         secretary = self.params["secretary"]
         kitchen = self.params["kitchen"]
-        crew = director + accountant + secretary + kitchen
+        pastor = self.params["pastor"]
+        crew = director + accountant + secretary + kitchen + pastor
 
-        R1 = (c1 * x1 + c2 * x2) + (d1 * t1) + (d2 * t2) + (2 * 3940.08) + G + crew <= I * (x1 + x2)
+        R1 = (c1 * x1 + c2 * x2) + (d1 * t1) + (d2 * t2) + 4175.04 + G + V + crew <= (I + E) * (x1 + x2)
         R2 = x1 + x2 <= n_max
         R3 = x1 >= 1
         R4 = x2 >= 1
-        R5 = x1 >= (kratio) * (x1 + x2)
-        R9 = x1 <= (40 * t1 + 20 * t2)
-        R10 = x2 <= (100 * t1 + 50 * t2)
-        R11 = t1 >= 1
-        R12 = t2 >= 1
-        R13 = (x1 * 1.5 * 2 * 10) + ((t1 + t2) * 2 * 10) + ((t1 + t2) * 2 * 44) + ((t1 + t2) * 2 * 5) + (x2 * 1.5) + ((t1 + t2) * 40) <= 0.6 * ((t2 * 960) + (t1 * 1920))
+        R5 = x1 <= (kratio) * (x1 + x2)
+        R9 = x1 <= (50 * t1)
+        R10 = x2 <= (120 * t2)
+        R11 = t1 >= 0
+        R12 = t2 >= 0
+        # R13 = (x1 * 2.5 * 2 * 10) + ((t1 + t2) * 2 * 10) + ((t1 + t2) * 2 * 44) + ((t1 + t2) * 2 * 5) + (x2 * 1.5) + (2 * (t1 + t2) * 40) <= 0.6 * ((t2 * 960) + (t1 * 1920))
+        R13 = (x1 * 1.5 * 2 * 10) + (t1 * 2 * 10) + (t1 * 2 * 2) <= 0.8 * (t1 * 1920) #1920
+        R14 = (t2 * 2 * 44) + (t2 * 2 * 2) + (x2 * 1.5) + (2 * t2 * 40) <= 0.8 * (t2 * 1920)
 
-        for const in [R1, R2, R3, R4, R5, R9, R10, R11, R12, R13]:
+        for const in [R1, R2, R3, R4, R5, R9, R11, R12, R13, R14]:
             self.model.addConstraint(constraint=const)
 
     def solve(self) -> None:
