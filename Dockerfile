@@ -10,11 +10,11 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Instala CBC (Coin-or Branch and Cut)
-RUN wget https://github.com/coin-or/Cbc/releases/download/releases%2F2.10.10/Cbc-releases.2.10.10-linux-x86_64.tar.gz \
-    && tar -xvzf Cbc-releases.2.10.10-linux-x86_64.tar.gz \
+RUN wget https://github.com/coin-or/Cbc/releases/download/releases%2F2.10.12/Cbc-releases.2.10.12-x86_64-ubuntu20-gcc940-static.tar.gz \
+    && tar -xvzf Cbc-releases.2.10.12-x86_64-ubuntu20-gcc940-static.tar.gz \
     && mv cbc /usr/local/bin/cbc \
     && chmod +x /usr/local/bin/cbc \
-    && rm Cbc-releases.2.10.10-linux-x86_64.tar.gz
+    && rm Cbc-releases.2.10.12-x86_64-ubuntu20-gcc940-static.tar.gz
 
 # Crea el directorio de trabajo
 WORKDIR /app
