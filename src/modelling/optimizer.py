@@ -54,20 +54,21 @@ class BudgetLpOptimizer(LpOptimizer):
         t1 = self.variables["t1"]
         t2 = self.variables["t2"]
         G = self.params["G"]
+        med_remb = self.params["med_remb"]
         E = self.params["E"]
         V = self.params["V"]
         I = self.params["I"]
         n_max = self.params["N_max"]
         kratio = self.params["kids_ratio"]
 
+        doctor = self.params["doctor"]
         director = self.params["director"]
         accountant = self.params["accountant"]
         secretary = self.params["secretary"]
-        kitchen = self.params["kitchen"]
-        pastor = self.params["pastor"]
-        crew = director + accountant + secretary + kitchen + pastor
+        additional = self.params["additional"]
+        crew = director + accountant + secretary + additional
 
-        R1 = (c1 * x1 + c2 * x2) + (d1 * t1) + (d2 * t2) + 4741.56 + G + V + crew <= (I + E) * (x1 + x2)
+        R1 = (c1 * x1 + c2 * x2) + (d1 * t1) + (d2 * t2) + doctor + G + med_remb + V + crew <= (I + E) * (x1 + x2)
         R2 = x1 + x2 <= n_max
         R3 = x1 >= 1
         R4 = x2 >= 1

@@ -46,9 +46,9 @@ def run_optimizer(params):
         results["total_kids"] = results["n1"] + results["n2"]
         results["expenses"] = ((params["C1"] * results["n1"] + params["C2"] * results["n2"]) +
                                (params["D1"] * results["t1"]) + (params["D2"] * results["t2"]) +
-                               params["G"] + params["V"] +
+                               params["G"] + params["med_remb"] + params["V"] +
                                params["director"] + params["accountant"] +
-                               params["secretary"] + params["kitchen"] + params["pastor"] + 4741.56)
+                               params["secretary"] + params["additional"] + params["doctor"])
         results["budget"] = (params["I"] + params["E"]) * results["total_kids"]
 
     return results
@@ -77,7 +77,7 @@ def sidebar_contents():
     # Sección de parámetros de costo
     with st.sidebar.expander("Parámetros de Costo", expanded=True):
         c1 = st.number_input("Costo participante basado en el hogar", value=25.00, step=10.0, format="%.2f")
-        c2 = st.number_input("Costo participante basado en el centro", value=98.00, step=10.0, format="%.2f")
+        c2 = st.number_input("Costo participante basado en el centro", value=99.00, step=10.0, format="%.2f")
         d1 = st.number_input("Costo tutor para atención en el hogar", value=7735.32, step=10.0, format="%.2f")
         d2 = st.number_input("Costo tutor para atención en el centro", value=7735.32, step=10.0, format="%.2f")
 
@@ -96,13 +96,14 @@ def sidebar_contents():
 
     # Sección de gastos fijos
     with st.sidebar.expander("Gastos Fijos", expanded=True):
-        g = st.number_input("Gastos recurrentes", value=3012.26 + 500.00, step=100.0, format="%.2f")
+        g = st.number_input("Gastos recurrentes", value=3012.26, step=100.0, format="%.2f")
+        med_remb = st.number_input("Gastos reembolso médico", value=500.00, step=100.0, format="%.2f")
         v = st.number_input("Gastos por voluntarios", value=1000.00, step=100.0, format="%.2f")
+        doctor = st.number_input("Costo tutor de salud", value=4741.56, step=100.0, format="%.2f")
         director = st.number_input("Costo director/a", value=7735.32, step=100.0, format="%.2f")
         accountant = st.number_input("Costo contador/a", value=float(200 * 12), step=100.0, format="%.2f")
         secretary = st.number_input("Costo secretario/a", value=4741.56, step=100.0, format="%.2f")
-        kitchen = st.number_input("Costo cocinero/a", value=0.00, step=100.0, format="%.2f")
-        pastor = st.number_input("Costo pastor", value=0.00, step=100.0, format="%.2f")
+        additional = st.number_input("Costo otra posición", value=0.00, step=100.0, format="%.2f")
 
     # Documentación del modelo como sección normal (no colapsable)
     st.sidebar.header("Documentación del Modelo")
@@ -111,16 +112,16 @@ def sidebar_contents():
     sujeto a restricciones de presupuesto, capacidad, y operativas.
 
     **Variables de Decisión:**
-    - **x1**: Cantidad de niños tipo 1
-    - **x2**: Cantidad de niños tipo 2
-    - **t1**: Cantidad de maestros tipo 1
-    - **t2**: Cantidad de maestros tipo 2
+    - **x1**: Cantidad de participantes basado en el hogar
+    - **x2**: Cantidad de participantes basado en el centro
+    - **t1**: Cantidad de tutores con atención en el hogar
+    - **t2**: Cantidad de tutores con atención en el centro
 
     **Restricciones Principales:**
-    - **Presupuestaria**: Los gastos totales deben ser menores o iguales al presupuesto
-    - **Capacidad**: El número total de niños no puede exceder la capacidad máxima
-    - **Proporción de niños**: El número de niños tipo 1 debe mantener cierta proporción del total
-    - **Relación niños-maestros**: Cada maestro puede atender a un número máximo de niños
+    - **Presupuestaria**: Los gastos totales deben ser menores o iguales al presupuesto.
+    - **Capacidad**: El número total de participantes no puede exceder la capacidad máxima.
+    - **Proporción de participantes**: El número de participantes basado en el hogar debe mantener cierta proporción del total
+    - **Relación participantes-tutor**: Cada tutor puede atender a un número máximo de participantes
     """)
 
     # Recopilación de parámetros
@@ -134,12 +135,13 @@ def sidebar_contents():
         "N_max": n_max,
         "kids_ratio": kids_ratio,
         "G": g,
+        "med_remb": med_remb,
         "V": v,
+        "doctor": doctor,
         "director": director,
         "accountant": accountant,
         "secretary": secretary,
-        "kitchen": kitchen,
-        "pastor": pastor,
+        "additional": additional
     }
 
     return params
@@ -220,14 +222,13 @@ def display_details(results, params):
         with col3:
             # Métricas financieras
             st.metric(
-                label="Presupuesto total",
+                label="Presupuesto anual total",
                 value=f"${results['budget']:,.2f}",
                 border=True
             )
         with col4:
-            margin = results['budget'] - results['expenses']
             st.metric(
-                label="Gastos totales estimados",
+                label="Gastos totales anuales estimados",
                 value=f"${results['expenses']:,.2f}",
                 border=True
             )
@@ -247,12 +248,14 @@ def display_ratios_table(results):
         "Ratio": [
             "Proporción participantes basados en el hogar",
             "Proporción participantes basados en el centro",
-            "Participantes por tutor"
+            "Participantes por tutor",
+            "Total participantes asignados a un tutor"
         ],
         "Valor": [
             f"{results['n1'] / results['total_kids']:.2%}",
             f"{results['n2'] / results['total_kids']:.2%}",
-            f"{int((results['n1'] + results['n2']) / (results['t1'] + results['t2']))}" if (results['t1'] + results['t2']) > 0 else "N/A"
+            f"25 a 30 participantes",
+            f"{int((results['n1'] + results['n2']) / (results['t1'] + results['t2']))}"
         ]
     }
     st.dataframe(pd.DataFrame(ratios_data), use_container_width=True, hide_index=True)
@@ -269,7 +272,8 @@ def display_costs_table(results, params):
             "Tutor de salud",
             "Personal",
             "Gastos recurrentes",
-            "Gastos por voluntarios",
+            "Gastos reembolso médico",
+            "Gastos movilización",
             "TOTAL"
         ],
         "Costo": [
@@ -277,9 +281,10 @@ def display_costs_table(results, params):
             f"${params['C2'] * results['n2']:,.2f}",
             f"${params['D1'] * results['t1']:,.2f}",
             f"${params['D2'] * results['t2']:,.2f}",
-            f"${4741.46:,.2f}",
-            f"${params['director'] + params['accountant'] + params['secretary'] + params['kitchen'] + params['pastor']:,.2f}",
+            f"${params['doctor']:,.2f}",
+            f"${params['director'] + params['accountant'] + params['secretary'] + params['additional']:,.2f}",
             f"${params['G']:,.2f}",
+            f"${params['med_remb']:,.2f}",
             f"${params['V']:,.2f}",
             f"${results['expenses']:,.2f}"
         ],
@@ -288,9 +293,10 @@ def display_costs_table(results, params):
             f"{(params['C2'] * results['n2']) / results['expenses']:.2%}",
             f"{(params['D1'] * results['t1']) / results['expenses']:.2%}",
             f"{(params['D2'] * results['t2']) / results['expenses']:.2%}",
-            f"{4741.46 / results['expenses']:.2%}",
-            f"{(params['director'] + params['accountant'] + params['secretary'] + params['kitchen'] + params['pastor']) / results['expenses']:.2%}",
+            f"{params['doctor'] / results['expenses']:.2%}",
+            f"{(params['director'] + params['accountant'] + params['secretary'] + params['additional']) / results['expenses']:.2%}",
             f"{(params['G']) / results['expenses']:.2%}",
+            f"{(params['med_remb']) / results['expenses']:.2%}",
             f"{(params['V']) / results['expenses']:.2%}",
             "100.00%"
         ]
@@ -302,7 +308,7 @@ def display_costs_table(results, params):
 def main():
     """Función principal de la aplicación"""
     # Título y descripción
-    st.title("Child Support Optimizer")
+    st.title("Optimizador de Presupuesto")
     st.caption(f"Modelo de optimización lineal {MODEL_VERSION}")
 
     st.markdown("""
