@@ -95,7 +95,7 @@ def sidebar_contents():
         )
 
     # Sección de gastos fijos
-    with st.sidebar.expander("Gastos Fijos", expanded=True):
+    with st.sidebar.expander("Gastos", expanded=True):
         g = st.number_input("Gastos recurrentes", value=3012.26, step=100.0, format="%.2f")
         med_remb = st.number_input("Gastos reembolso médico", value=500.00, step=100.0, format="%.2f")
         v = st.number_input("Gastos por voluntarios", value=1000.00, step=100.0, format="%.2f")
