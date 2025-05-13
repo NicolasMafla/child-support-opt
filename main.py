@@ -1,7 +1,6 @@
 import streamlit as st
 import pulp
 import pandas as pd
-from typing import Dict, Any
 from src.modelling.optimizer import BudgetLpOptimizer
 from PIL import Image
 import os
@@ -9,7 +8,7 @@ import os
 # Configuración de la página
 st.set_page_config(
     page_title="Optimizador de Presupuesto",
-    page_icon="💰",
+    # page_icon="💰",
     layout="wide"
 )
 
@@ -49,8 +48,8 @@ def run_optimizer(params):
                                (params["D1"] * results["t1"]) + (params["D2"] * results["t2"]) +
                                params["G"] + params["V"] +
                                params["director"] + params["accountant"] +
-                               params["secretary"] + params["kitchen"] + params["pastor"])
-        results["budget"] = params["I"] * results["total_kids"]
+                               params["secretary"] + params["kitchen"] + params["pastor"] + 4741.56)
+        results["budget"] = (params["I"] + params["E"]) * results["total_kids"]
 
     return results
 
@@ -77,31 +76,33 @@ def sidebar_contents():
 
     # Sección de parámetros de costo
     with st.sidebar.expander("Parámetros de Costo", expanded=True):
-        c1 = st.number_input("C1 (Costo por niño tipo 1)", value=41.88401, step=1.0, format="%.5f")
-        c2 = st.number_input("C2 (Costo por niño tipo 2)", value=165.59988, step=1.0, format="%.5f")
-        d1 = st.number_input("D1 (Costo por maestro tipo 1)", value=7925.16, step=100.0, format="%.2f")
-        d2 = st.number_input("D2 (Costo por maestro tipo 2)", value=7925.16, step=100.0, format="%.2f")
+        c1 = st.number_input("Costo participante basado en el hogar", value=25.00, step=10.0, format="%.2f")
+        c2 = st.number_input("Costo participante basado en el centro", value=98.00, step=10.0, format="%.2f")
+        d1 = st.number_input("Costo tutor para atención en el hogar", value=7735.32, step=10.0, format="%.2f")
+        d2 = st.number_input("Costo tutor para atención en el centro", value=7735.32, step=10.0, format="%.2f")
 
     # Sección de parámetros de ingreso
     with st.sidebar.expander("Parámetros de Ingresos", expanded=True):
-        i = st.number_input("I (Ingreso mensual por niño)", value=20.5 * 12, step=1.0, format="%.5f")
-        e = st.number_input("E (Extra)", value=7.04717, step=0.1, format="%.5f")
+        i = st.number_input("Tarifa Child Support Anual", value=20.5 * 12, step=10.0, format="%.2f")
+        e = st.number_input("Movilización de recursos propios", value=0.00, step=10.0, format="%.2f")
 
     # Sección de restricciones
     with st.sidebar.expander("Restricciones", expanded=True):
-        n_max = st.number_input("N_max (Capacidad máxima)", value=1000.0, step=10.0, format="%.1f")
-        kids_ratio = st.slider("Proporción de niños tipo 1", min_value=0.0, max_value=1.0, value=0.19, step=0.01,
-                               format="%.2f")
+        n_max = st.number_input("Capacidad máxima de participantes", value=1000, step=10)
+        kids_ratio = st.slider(
+            "Proporción participantes en el hogar", min_value=0.0, max_value=1.0, value=0.12, step=0.01,
+            format="%.2f"
+        )
 
     # Sección de gastos fijos
     with st.sidebar.expander("Gastos Fijos", expanded=True):
-        g = st.number_input("G (Gastos generales)", value=4570.15, step=100.0, format="%.2f")
-        v = st.number_input("V (Gastos variables)", value=1140.76, step=100.0, format="%.2f")
-        director = st.number_input("Director", value=7925.16, step=100.0, format="%.2f")
-        accountant = st.number_input("Contador", value=float(235 * 12), step=100.0, format="%.2f")
-        secretary = st.number_input("Secretaria", value=2820.0, step=100.0, format="%.2f")
-        kitchen = st.number_input("Cocina", value=0.0, step=100.0, format="%.2f")
-        pastor = st.number_input("Pastor", value=0.0, step=100.0, format="%.2f")
+        g = st.number_input("Gastos recurrentes", value=3012.26 + 500.00, step=100.0, format="%.2f")
+        v = st.number_input("Gastos por voluntarios", value=1000.00, step=100.0, format="%.2f")
+        director = st.number_input("Costo director/a", value=7735.32, step=100.0, format="%.2f")
+        accountant = st.number_input("Costo contador/a", value=float(200 * 12), step=100.0, format="%.2f")
+        secretary = st.number_input("Costo secretario/a", value=4741.56, step=100.0, format="%.2f")
+        kitchen = st.number_input("Costo cocinero/a", value=0.00, step=100.0, format="%.2f")
+        pastor = st.number_input("Costo pastor", value=0.00, step=100.0, format="%.2f")
 
     # Documentación del modelo como sección normal (no colapsable)
     st.sidebar.header("Documentación del Modelo")
@@ -145,37 +146,52 @@ def sidebar_contents():
 
 
 def display_metrics(results):
-    """Muestra las métricas principales"""
-    st.subheader("Variables Principales")
+    """Muestra las métricas principales separadas en dos filas"""
 
-    # Crear layout de 4 columnas para las métricas principales
-    col1, col2, col3, col4 = st.columns(4)
+    # Primera fila: Participantes
+    st.subheader("Participantes")
+
+    # Crear layout de 2 columnas para los participantes
+    col1, col2 = st.columns(2)
 
     with col1:
         st.metric(
-            label="Niños tipo 1 (x1)",
+            label="Basados en el hogar",
             value=int(results["n1"]),
             border=True
         )
 
     with col2:
         st.metric(
-            label="Niños tipo 2 (x2)",
+            label="Basados en el centro",
             value=int(results["n2"]),
             border=True
         )
 
+    # Segunda fila: Tutores
+    st.subheader("Tutores")
+
+    # Crear layout de 3 columnas para los tutores
+    col3, col4, col5 = st.columns(3)
+
     with col3:
         st.metric(
-            label="Maestros tipo 1 (t1)",
+            label="Tutores atención hogar y centro",
             value=int(results["t1"]),
             border=True
         )
 
     with col4:
         st.metric(
-            label="Maestros tipo 2 (t2)",
+            label="Tutores atención en centro",
             value=int(results["t2"]),
+            border=True
+        )
+
+    with col5:
+        st.metric(
+            label="Tutor de salud",
+            value=1,
             border=True
         )
 
@@ -185,57 +201,58 @@ def display_details(results, params):
     with st.expander("Detalles de la Solución", expanded=False):
         # Sección de Totales
         st.subheader("Totales")
-        col1, col2 = st.columns(2)
 
+        col1, col2 = st.columns(2)
         with col1:
             st.metric(
-                label="Total de Niños",
+                label="Total de participantes",
                 value=int(results["total_kids"]),
                 border=True
             )
-
+        with col2:
             st.metric(
-                label="Total de Maestros",
-                value=int(results["t1"] + results["t2"]),
+                label="Total de tutores",
+                value=int(results["t1"] + results["t2"] + 1),
                 border=True
             )
 
-        with col2:
+        col3, col4 = st.columns(2)
+        with col3:
             # Métricas financieras
             st.metric(
-                label="Presupuesto Total",
+                label="Presupuesto total",
                 value=f"${results['budget']:,.2f}",
                 border=True
             )
-
+        with col4:
             margin = results['budget'] - results['expenses']
             st.metric(
-                label="Gastos Totales",
+                label="Gastos totales estimados",
                 value=f"${results['expenses']:,.2f}",
                 border=True
             )
 
-        # Tabla de ratios
-        st.subheader("Ratios Detallados")
-        display_ratios_table(results)
-
         # Tabla de costos
-        st.subheader("Estructura de Gastos")
+        st.subheader("Distribución de gastos")
         display_costs_table(results, params)
+
+        # Tabla de ratios
+        st.subheader("Ratios")
+        display_ratios_table(results)
 
 
 def display_ratios_table(results):
     """Muestra la tabla de ratios"""
     ratios_data = {
-        "Ratio": ["Niños tipo 1 / Total", "Niños tipo 2 / Total",
-                  "Niños por maestro tipo 1", "Niños por maestro tipo 2",
-                  "Maestros / Total niños"],
+        "Ratio": [
+            "Proporción participantes basados en el hogar",
+            "Proporción participantes basados en el centro",
+            "Participantes por tutor"
+        ],
         "Valor": [
             f"{results['n1'] / results['total_kids']:.2%}",
             f"{results['n2'] / results['total_kids']:.2%}",
-            f"{results['n1'] / results['t1']:.2f}" if results["t1"] > 0 else "N/A",
-            f"{results['n2'] / results['t2']:.2f}" if results["t2"] > 0 else "N/A",
-            f"{(results['t1'] + results['t2']) / results['total_kids']:.4f}" if results["total_kids"] > 0 else "N/A"
+            f"{int((results['n1'] + results['n2']) / (results['t1'] + results['t2']))}" if (results['t1'] + results['t2']) > 0 else "N/A"
         ]
     }
     st.dataframe(pd.DataFrame(ratios_data), use_container_width=True, hide_index=True)
@@ -244,24 +261,37 @@ def display_ratios_table(results):
 def display_costs_table(results, params):
     """Muestra la tabla de estructura de costos"""
     costs = {
-        "Categoría": ["Niños tipo 1", "Niños tipo 2", "Maestros tipo 1", "Maestros tipo 2",
-                      "Personal", "Gastos Generales", "TOTAL"],
+        "Categoría": [
+            "Participantes basados en el hogar",
+            "Participantes basados en el centro",
+            "Tutores atención en el hogar y centro",
+            "Tutores atención en el centro",
+            "Tutor de salud",
+            "Personal",
+            "Gastos recurrentes",
+            "Gastos por voluntarios",
+            "TOTAL"
+        ],
         "Costo": [
-            params["C1"] * results["n1"],
-            params["C2"] * results["n2"],
-            params["D1"] * results["t1"],
-            params["D2"] * results["t2"],
-            params["director"] + params["accountant"] + params["secretary"] + params["kitchen"] + params["pastor"],
-            params["G"] + params["V"],
-            results["expenses"]
+            f"${params['C1'] * results['n1']:,.2f}",
+            f"${params['C2'] * results['n2']:,.2f}",
+            f"${params['D1'] * results['t1']:,.2f}",
+            f"${params['D2'] * results['t2']:,.2f}",
+            f"${4741.46:,.2f}",
+            f"${params['director'] + params['accountant'] + params['secretary'] + params['kitchen'] + params['pastor']:,.2f}",
+            f"${params['G']:,.2f}",
+            f"${params['V']:,.2f}",
+            f"${results['expenses']:,.2f}"
         ],
         "Porcentaje": [
             f"{(params['C1'] * results['n1']) / results['expenses']:.2%}",
             f"{(params['C2'] * results['n2']) / results['expenses']:.2%}",
             f"{(params['D1'] * results['t1']) / results['expenses']:.2%}",
             f"{(params['D2'] * results['t2']) / results['expenses']:.2%}",
+            f"{4741.46 / results['expenses']:.2%}",
             f"{(params['director'] + params['accountant'] + params['secretary'] + params['kitchen'] + params['pastor']) / results['expenses']:.2%}",
-            f"{(params['G'] + params['V']) / results['expenses']:.2%}",
+            f"{(params['G']) / results['expenses']:.2%}",
+            f"{(params['V']) / results['expenses']:.2%}",
             "100.00%"
         ]
     }
@@ -272,11 +302,11 @@ def display_costs_table(results, params):
 def main():
     """Función principal de la aplicación"""
     # Título y descripción
-    st.title("Optimizador de Presupuesto")
+    st.title("Child Support Optimizer")
     st.caption(f"Modelo de optimización lineal {MODEL_VERSION}")
 
     st.markdown("""
-    Esta aplicación te permite optimizar la distribución de recursos usando programación lineal.
+    Esta aplicación te permite optimizar la distribución de recursos del programa mediante un modelo de programación lineal.
     Ajusta los parámetros y observa cómo cambian los resultados óptimos.
     """)
 
