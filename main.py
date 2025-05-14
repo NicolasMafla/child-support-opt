@@ -84,7 +84,7 @@ def sidebar_contents():
     # Sección de parámetros de ingreso
     with st.sidebar.expander("Parámetros de Ingresos", expanded=True):
         i = st.number_input("Tarifa Child Support Anual", value=20.5 * 12, step=10.0, format="%.2f")
-        e = st.number_input("Movilización de recursos propios", value=0.00, step=10.0, format="%.2f")
+        e = st.number_input("Movilización de recursos locales", value=0.00, step=10.0, format="%.2f")
 
     # Sección de restricciones
     with st.sidebar.expander("Restricciones", expanded=True):
@@ -98,7 +98,7 @@ def sidebar_contents():
     with st.sidebar.expander("Gastos", expanded=True):
         g = st.number_input("Gastos recurrentes", value=3012.26, step=100.0, format="%.2f")
         med_remb = st.number_input("Gastos reembolso médico", value=500.00, step=100.0, format="%.2f")
-        v = st.number_input("Gastos por voluntarios", value=1000.00, step=100.0, format="%.2f")
+        v = st.number_input("Gastos por movilización transporte", value=1000.00, step=100.0, format="%.2f")
         doctor = st.number_input("Costo tutor de salud", value=4741.56, step=100.0, format="%.2f")
         director = st.number_input("Costo director/a", value=7735.32, step=100.0, format="%.2f")
         accountant = st.number_input("Costo contador/a", value=float(200 * 12), step=100.0, format="%.2f")
@@ -273,7 +273,7 @@ def display_costs_table(results, params):
             "Personal",
             "Gastos recurrentes",
             "Gastos reembolso médico",
-            "Gastos movilización",
+            "Gastos movilización transporte",
             "TOTAL"
         ],
         "Costo": [
