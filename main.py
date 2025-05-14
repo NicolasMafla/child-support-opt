@@ -7,7 +7,7 @@ import os
 
 # Configuración de la página
 st.set_page_config(
-    page_title="Optimizador de Presupuesto",
+    page_title="Optimizador de Compassion",
     # page_icon="💰",
     layout="wide"
 )
@@ -308,7 +308,7 @@ def display_costs_table(results, params):
 def main():
     """Función principal de la aplicación"""
     # Título y descripción
-    st.title("Optimizador de Presupuesto")
+    st.title("Simulador del Punto de Equilibrio de una FCP")
     st.caption(f"Modelo de optimización lineal {MODEL_VERSION}")
 
     st.markdown("""
