@@ -336,7 +336,3 @@ def main():
         else:
             st.error(f"❌ Estado de la solución: Inviable")
             st.warning("No se pudo encontrar una solución óptima. Revise los parámetros del modelo.")
-
-
-if __name__ == "__main__":
-    main()
